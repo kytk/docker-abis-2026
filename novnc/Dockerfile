@@ -118,31 +118,23 @@ RUN set -ex \
        software-properties-common \
        fonts-noto \
        fonts-noto-cjk \
-       fonts-ipafont \
-       fonts-ipafont-gothic \
-       fonts-ipafont-mincho \
        pigz \
        appmenu-gtk-module-common \
        appmenu-gtk2-module \
        libappmenu-gtk2-parser0 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /tmp/* /var/tmp/* 
-
-# Libreoffice calc and writer
-RUN set -ex \
-    && apt-get update \
-    && apt-get -y install \
        libreoffice-calc \
-       libreoffice-writer \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /tmp/* /var/tmp/* 
+       libreoffice-writer 
 
 # Install Google-chrome
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
- && apt install -y ./google-chrome-stable_current_amd64.deb \
- && rm google-chrome-stable_current_amd64.deb
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub |\
+    gpg --dearmor | sudo tee /etc/apt/keyrings/google-chrome.gpg > /dev/null \
+    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" |\
+    tee /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* /var/tmp/* 
 
 ########## End of Part 1 ##########
 
