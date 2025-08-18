@@ -25,7 +25,7 @@ docker run \
   --name abis \
   -d -p 6080:6080 \
   -v .:/home/brain/share \
-  kytk/abis-novnc:latest
+  kytk/abis-2026:latest
 ```
 
 ## Lin4Neuroへのアクセス
@@ -39,14 +39,11 @@ Webブラウザで `http://localhost:6080/vnc.html` にアクセスすると、L
 
 ```bash
 docker run \
-  --shm-size=4g \
-  --privileged \
   --platform linux/amd64 \
   --name abis \
-  -e RESOLUTION=1600x900x24 \
   -d -p 6080:6080 \
   -v .:/home/brain/share \
-  kytk/abis-novnc:latest
+  kytk/abis-2026:latest
 ```
 
 

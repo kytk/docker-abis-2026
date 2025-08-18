@@ -26,14 +26,14 @@ export PATH=$PATH:/usr/local/mrtrix3/bin
 export PATH=/usr/local/dcm2niix:$PATH
 
 #SPM12 standalone
-alias spm='/usr/local/spm12_standalone/run_spm12.sh /usr/local/MATLAB/MCR/R2024b 2>/dev/null'
+alias spm25='/usr/local/spm25_standalone/run_spm25.sh /usr/local/MATLAB/MCR/R2024b 2>/dev/null'
 
 #conn22v2407 standalone
 alias conn='/usr/local/conn22v2407_standalone/run_conn.sh /usr/local/MATLAB/MCR/R2024b 2>/dev/null'
 
-#FreeSurfer 8.0.1
-export SUBJECTS_DIR=~/freesurfer/8.0.1/subjects
-export FREESURFER_HOME=/usr/local/freesurfer/8.0.1
+#FreeSurfer 8.1.0
+export SUBJECTS_DIR=~/freesurfer/8.1.0/subjects
+export FREESURFER_HOME=/usr/local/freesurfer/8.1.0
 export FS_LICENSE=~/share/license.txt
 source $FREESURFER_HOME/SetUpFreeSurfer.sh
 
