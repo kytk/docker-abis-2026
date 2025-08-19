@@ -210,6 +210,8 @@ RUN set -ex && \
     chown -R brain:brain /home/brain/git && \
     # Final cleanup
     apt-get clean && \
+    apt-get autoremove -y && \
+    apt-get autoclean && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* && \
     rm -rf /tmp/* /var/tmp/* && \
     # Remove unnecessary files from installed software
