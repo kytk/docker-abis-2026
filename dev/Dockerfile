@@ -267,13 +267,6 @@ RUN set -ex && \
     find . -name ".DS_Store" -delete 2>/dev/null || true && \
     find . -name "Thumbs.db" -delete 2>/dev/null || true
 
-# Check size after optimization
-RUN echo "=== MATLAB size after Stage 1 optimization ===" && \
-    du -sh /usr/local/MATLAB 2>/dev/null || echo "Checking size..." && \
-    echo "=== Verify deleted files ===" && \
-    echo "PDF files:" && find /usr/local/MATLAB/MCR/R2024b -name "*.pdf" | wc -l && \
-    echo "Help directory exists:" && ls /usr/local/MATLAB/MCR/R2024b/help/ 2>/dev/null | wc -l || echo "0 (deleted)"
-
 # Stage 2: MATLAB Toolbox optimization (Remove unused toolboxes, keep SPM/CONN essentials)
 # This stage removes toolboxes that are not required by SPM25 and CONN
 
@@ -392,19 +385,6 @@ RUN set -ex && \
            datafeed* \
            trading* \
            spreadsheet* 2>/dev/null || true
-
-# Verify remaining essential toolboxes
-RUN echo "=== Remaining essential toolboxes for SPM/CONN ===" && \
-    ls -la /usr/local/MATLAB/MCR/R2024b/toolbox/ | grep -E "(matlab|stats|signal|images|shared|compiler)" || \
-    echo "Listing all remaining toolboxes:" && \
-    ls /usr/local/MATLAB/MCR/R2024b/toolbox/
-
-# Check size after toolbox optimization  
-RUN echo "=== MATLAB size after Stage 2 (toolbox) optimization ===" && \
-    du -sh /usr/local/MATLAB && \
-    echo "=== Toolbox directory size ===" && \
-    du -sh /usr/local/MATLAB/MCR/R2024b/toolbox/
-
 
 
 
