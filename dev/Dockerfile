@@ -1,6 +1,6 @@
 ## Dockerfile to make "docker-abis-2026"
 ## This file makes a container image of docker-abis-2026
-## K. Nemoto 18 Aug 2025
+## K. Nemoto 19 Aug 2025
 
 FROM ubuntu:22.04
 
@@ -57,7 +57,7 @@ RUN set -ex \
        bash_kernel octave_kernel \
     && python3 -m bash_kernel.install
 
-# Utilities
+# Utilities and libraries
 RUN set -ex && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -78,6 +78,7 @@ RUN set -ex && \
       gedit \
       gnome-system-monitor \
       gnome-system-tools \
+      baobab \
       imagemagick \
       rename \
       ntp \
@@ -86,13 +87,11 @@ RUN set -ex && \
       vim  \
       zip \
       tcsh \
-      libopenblas-base \
       apturl \
       dmz-cursor-theme \
       p7zip-full \
       gnupg \
       meld \
-      libjpeg62 \
       software-properties-common \
       fonts-noto \
       fonts-noto-cjk \
@@ -104,7 +103,11 @@ RUN set -ex && \
       libreoffice-writer \
       octave \
       gawk \
-      sed 
+      sed \
+      libopenblas-base \
+      libjpeg62 \
+      libgtk2.0-0
+
 
 # Firefox
 RUN set -ex \
@@ -258,11 +261,19 @@ RUN set -ex && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/* /var/tmp/* 
 
-##### Part 4. User #####
+##### Part 4. Individual user settings #####
 
 # Create a directory for supervisor logs
 RUN mkdir -p /home/brain/logs && \
     chown -R brain:brain /home/brain/logs
+
+# Create xfce4 config directory and copy desktop settings
+RUN mkdir -p /home/brain/.config/xfce4/xfconf && \
+    chown -R brain:brain /home/brain/.config
+
+# Copy pre-configured xfce4-desktop.xml
+COPY xfce4-desktop.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
+RUN chown brain:brain /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
 
 # Disable screensaver
 RUN echo '\n\
