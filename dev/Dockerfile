@@ -161,7 +161,10 @@ RUN set -ex && \
     apt-get update && apt-get install -f -y && \
     dpkg --configure -a && \
     mkdir -p /home/brain/freesurfer/8.1.0 && \
-    cp -rs /usr/local/freesurfer/8.1.0/subjects /home/brain/freesurfer/8.1.0/ && \
+    cp -r /usr/local/freesurfer/8.1.0/subjects /home/brain/freesurfer/8.1.0/ && \
+    unzip bert.zip -d /home/brain/freesurfer/8.1.0/subjects/ && \
+    rm bert.zip && \
+    chown -R brain:brain /home/brain/freesurfer && \
     rm -f freesurfer_ubuntu22-8.1.0_amd64.deb && \
     # Scripts
     mkdir -p /home/brain/git && \
