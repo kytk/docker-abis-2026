@@ -358,15 +358,18 @@ RUN set -ex && \
 COPY xfce4-desktop.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
 COPY terminalrc /home/brain/.config/xfce4/terminal/terminalrc
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chown brain:brain /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml && \
-    chown brain:brain /home/brain/.config/xfce4/terminal/terminalrc
+    chown brain:brain /home/brain/.config/xfce4/terminal/terminalrc && \
+    chmod +x /usr/local/bin/entrypoint.sh
 
 ENV DISPLAY=:1
-
 EXPOSE 6080
 
+# Switch to user brain
 USER brain
 ENV USER=brain
 
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/local/bin/entrypoint.sh"]
+
