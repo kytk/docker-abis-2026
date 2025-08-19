@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WALLPAPER="/usr/share/backgrounds/xfce/deep_ocean.png"
+WALLPAPER="/usr/share/backgrounds/deep_ocean.png"
 
 # acquire settings
 CONFIG_LIST=$(xfconf-query -c xfce4-desktop -l)
