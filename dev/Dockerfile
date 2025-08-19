@@ -352,7 +352,7 @@ RUN set -ex && \
     mkdir -p /home/brain/.config/xfce4/terminal && \
     chown -R brain:brain /home/brain/.config && \
     chown -R brain:brain /home/brain/logs && \
-    echo '\n# Disable screensaver\nxset s off' >> /home/brain/.bashrc
+    echo '\n# Disable screensaver (only if X server is available)\nif command -v xset >/dev/null 2>&1 && xset q >/dev/null 2>&1; then\n    xset s off\nfi' >> /home/brain/.bashrc
 
 # Copy configuration files
 COPY xfce4-desktop.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
