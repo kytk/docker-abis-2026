@@ -275,6 +275,10 @@ RUN mkdir -p /home/brain/.config/xfce4/xfconf && \
 COPY xfce4-desktop.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
 RUN chown brain:brain /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
 
+# terminal
+COPY terminalrc /home/brain/.config/xfce4/terminal/
+RUN chown brain:brain /home/brain/.config/xfce4/terminal/terminalrc 
+ 
 # Disable screensaver
 RUN echo '\n\
 # Disable screensaver\n\
