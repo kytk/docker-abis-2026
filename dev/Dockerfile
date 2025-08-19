@@ -12,79 +12,40 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN set -ex && \
     apt-get update && \
     apt-get install -y \
-      xfce4 \
-      xfce4-terminal \
-      xfce4-indicator-plugin  \
-      xfce4-clipman \
-      xfce4-clipman-plugin \
-      xfce4-statusnotifier-plugin  \
-      xfce4-screenshooter \
-      shimmer-themes \
+      xfce4 xfce4-terminal xfce4-indicator-plugin  \
+      xfce4-clipman xfce4-clipman-plugin  xfce4-statusnotifier-plugin  \
+      xfce4-screenshooter shimmer-themes dmz-cursor-theme \
       xinit \
-      build-essential  \
-      dkms \
-      thunar-archive-plugin \
-      file-roller \
+      build-essential dkms \ 
+      thunar-archive-plugin  file-roller \
       xdg-utils \ 
-      tightvncserver \
-      novnc \
-      websockify \
-      net-tools \
-      supervisor \
-      x11vnc \
-      xvfb \
-      dbus-x11 \
-      sudo \
+      tightvncserver novnc websockify net-tools supervisor \
+      x11vnc xvfb \
+      dbus-x11 sudo \
       gnupg \
-      python3-pip \
-      python3-venv \
-      python3-dev \
-      python3-tk \
-      python3-gpg \
-      tzdata \
-      less \
-      iputils-ping \
-      nano \
-      rsync \
-      locate \
+      python3-pip python3-venv python3-dev python3-tk python3-gpg \
+      tzdata iputils-ping \
+      less nano \
+      rsync locate \
       git \
-      apt-utils \
+      apt-utils apt-file apturl \
       at-spi2-core \
-      bc \
-      curl \
-      wget \
-      dc \
+      bc dc \
+      curl wget \
       default-jre \
-      evince \
-      gedit \
-      gnome-system-monitor \
-      gnome-system-tools \
-      baobab \
+      evince gedit \
+      gnome-system-monitor gnome-system-tools baobab \
       imagemagick \
-      rename \
-      ntp \
-      tree \
-      unzip \
-      vim  \
-      zip \
-      tcsh \
-      apturl \
-      dmz-cursor-theme \
-      p7zip-full \
+      vim rename ntp tree unzip zip p7zip-full pigz \
+      csh tcsh \
       gnupg \
       meld \
       software-properties-common \
-      fonts-noto \
-      fonts-noto-cjk \
-      pigz \
-      appmenu-gtk-module-common \
-      appmenu-gtk2-module \
-      libappmenu-gtk2-parser0 \
-      libreoffice-calc \
-      libreoffice-writer \
+      fonts-noto fonts-noto-cjk \
+      appmenu-gtk-module-common appmenu-gtk2-module libappmenu-gtk2-parser0 \
+      libreoffice-calc libreoffice-writer \
       octave \
-      gawk \
-      sed \
+      gawk sed \
       libopenblas-base \
       libjpeg62 \
       libgtk2.0-0 \
@@ -93,10 +54,8 @@ RUN set -ex && \
       gettext \
       xterm \
       x11-apps \
-      csh \
       file \
-      xorg \
-      xorg-dev \
+      xorg xorg-dev \
       xserver-xorg-dev \
       libncurses5 && \
     # Timezone setup
@@ -105,8 +64,10 @@ RUN set -ex && \
     dpkg-reconfigure -f noninteractive tzdata && \
     # Python setup
     python3 -m pip install --upgrade pip && \
-    pip install --no-cache-dir numpy pandas pydicom gdcm \
-       heudiconv nipype nibabel jupyter notebook \
+    pip install --no-cache-dir \
+       numpy pandas matplotlib seaborn \
+       jupyter notebook gdcm \
+       pydicom heudiconv nipype nibabel \
        bash_kernel octave_kernel && \
     python3 -m bash_kernel.install && \
     # Firefox setup
@@ -145,7 +106,7 @@ RUN set -ex && \
     chmod 600 /home/brain/.vnc/passwd && \
     chown -R brain:brain /home/brain/.vnc
 
-##### Part 3. Neuroimaging Software (統合インストール) #####
+##### Part 3. Neuroimaging Software #####
 # Copy all packages at once
 COPY packages/* /tmp/
 
@@ -220,7 +181,7 @@ RUN set -ex && \
     find /usr/local -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
 ##### MATLAB Cleanup #####
-# Stage 1: Ultra-safe MATLAB MCR optimization (100% safe, no impact on SPM/CONN)
+# Stage 1: MATLAB MCR optimization
 
 RUN set -ex && \
     cd /usr/local/MATLAB/MCR/R2024b && \
@@ -267,8 +228,7 @@ RUN set -ex && \
     find . -name ".DS_Store" -delete 2>/dev/null || true && \
     find . -name "Thumbs.db" -delete 2>/dev/null || true
 
-# Stage 2: MATLAB Toolbox optimization (Remove unused toolboxes, keep SPM/CONN essentials)
-# This stage removes toolboxes that are not required by SPM25 and CONN
+# Stage 2: MATLAB Toolbox optimization
 
 RUN set -ex && \
     cd /usr/local/MATLAB/MCR/R2024b/toolbox && \
@@ -281,10 +241,9 @@ RUN set -ex && \
     # shared - Shared libraries (essential)
     # compiler - Compiler libraries (essential for standalone apps)
     # matlabcoder - May be required for compiled applications
+    # parallel
     \
-    # === Remove specialized toolboxes not used by SPM/CONN ===
-    \
-    # 1. Remove Simulink-related toolboxes (Large, not used by SPM/CONN)
+    # 1. Remove Simulink-related toolboxes
     rm -rf simulink* \
            stateflow* \
            sldv* \
@@ -368,15 +327,11 @@ RUN set -ex && \
            coverage* \
            requirements* 2>/dev/null || true && \
     \
-    # 11. Remove parallel computing (if not needed by SPM/CONN)
-    rm -rf parallel* \
-           distributed* 2>/dev/null || true && \
-    \
-    # 12. Remove GUI development toolboxes
+    # 11. Remove GUI development toolboxes
     rm -rf appdesigner* \
            uicomponents* 2>/dev/null || true && \
     \
-    # 13. Clean up any remaining specialized toolboxes
+    # 12. Clean up any remaining specialized toolboxes
     rm -rf instrument* \
            daq* \
            imaq* \
@@ -385,7 +340,6 @@ RUN set -ex && \
            datafeed* \
            trading* \
            spreadsheet* 2>/dev/null || true
-
 
 
 ##### Part 4. User Configuration #####
