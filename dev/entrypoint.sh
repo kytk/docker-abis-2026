@@ -11,7 +11,6 @@ case "$MODE" in
     "bash")
         echo "Starting interactive bash session..."
         # Set DISPLAY variable for X11 applications if needed
-        export DISPLAY=:1
         exec /bin/bash -l
         ;;
     *)
