@@ -1,6 +1,6 @@
-## Dockerfile to make "docker-abis-2026" (Optimized)
-## This file makes a container image of docker-abis-2026
-## K. Nemoto 19 Aug 2025
+## Dockerfile to make "docker-abis-2026" (Apptainer Compatible)
+## This file makes a container image of docker-abis-2026 with better Apptainer compatibility
+## K. Nemoto 20 Aug 2025
 
 FROM ubuntu:22.04
 
@@ -344,10 +344,13 @@ RUN set -ex && \
            trading* \
            spreadsheet* 2>/dev/null || true
 
-
 ##### Part 4. User Configuration #####
 RUN set -ex && \
+    # Create standard log directory (but logs will go to /tmp in practice)
     mkdir -p /home/brain/logs && \
+    # Ensure /tmp is writable (this is default, but explicit for clarity)
+    chmod 1777 /tmp && \
+    # User configuration directories
     mkdir -p /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml && \
     mkdir -p /home/brain/.config/xfce4/terminal && \
     chown -R brain:brain /home/brain/.config && \
