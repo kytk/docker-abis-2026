@@ -163,11 +163,9 @@ RUN set -ex && \
     echo "brain:lin4neuro" | chpasswd && \
     adduser brain sudo && \
     cp /etc/skel/.bashrc /home/brain/.bashrc && \
-    echo '# Load .bash_aliases if it exists' > /home/brain/.profile && \
-    echo 'if [ -f ~/.bash_aliases ] && [ -z "$BASH_ALIASES_LOADED" ]; then' >> \
-         /home/brain/.profile && \
-    echo '  . ~/.bash_aliases' >> /home/brain/.profile && \
-    echo '  export BASH_ALIASES_LOADED=1' >> /home/brain/.profile && \
+    echo '# Load .bashrc for bash login shells' > /home/brain/.profile && \
+    echo 'if [ -n "$BASH_VERSION" ]; then' >> /home/brain/.profile && \
+    echo '  . ~/.bashrc' >> /home/brain/.profile && \
     echo 'fi' >> /home/brain/.profile && \
     chmod 644 /home/brain/.bash_aliases /home/brain/.profile && \
     mkdir -p /home/brain/.vnc && \
