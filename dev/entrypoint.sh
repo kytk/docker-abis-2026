@@ -5,7 +5,7 @@
 # K. Nemoto 20 Aug 2025
 
 # Default mode is GUI
-MODE=${CONTAINER_MODE:-gui}
+MODE=${MODE:-gui}
 
 # Function to setup VNC password if needed
 setup_vnc() {
@@ -114,15 +114,15 @@ case "$MODE" in
         echo "Available modes: gui, bash"
         echo ""
         echo "Usage:"
-        echo "  Docker:     docker run -e CONTAINER_MODE=gui kytk/abis-2026"
-        echo "  Apptainer:  apptainer run --env CONTAINER_MODE=gui abis-2026.sif"
+        echo "  Docker:     docker run -e MODE=gui kytk/abis-2026"
+        echo "  Apptainer:  apptainer run --env MODE=gui abis-2026.sif"
         echo "  Default:    gui mode (if no mode specified)"
         echo ""
         echo "Examples:"
         echo "  GUI mode:   docker run kytk/abis-2026"
         echo "             apptainer run abis-2026.sif"
-        echo "  Shell:      docker run -e CONTAINER_MODE=bash kytk/abis-2026"
-        echo "             apptainer run --env CONTAINER_MODE=bash abis-2026.sif"
+        echo "  Shell:      docker run -it -e MODE=bash kytk/abis-2026"
+        echo "             apptainer run --env MODE=bash abis-2026.sif"
         exit 1
         ;;
 esac
