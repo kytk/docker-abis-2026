@@ -1,9 +1,23 @@
-#alias for xdg-open
+# alias for xdg-open
 alias open='xdg-open &> /dev/null'
 
-#shopt
+# shopt
 shopt -s direxpand
 shopt -s autocd
+
+# Disable screensaver
+xset s off
+
+# XDG Runtime Directory
+export XDG_RUNTIME_DIR="/tmp/runtime-brain"
+mkdir -p "$XDG_RUNTIME_DIR" 2>/dev/null || true
+chmod 700 "$XDG_RUNTIME_DIR" 2>/dev/null || true
+
+# Qt Session Management - Disable to avoid VNC authentication errors
+unset SESSION_MANAGER
+export QT_X11_NO_MITSHM=1
+export QT_GRAPHICSSYSTEM=native
+export QT_X11_NO_XIM=1
 
 # Mango
 export PATH=$PATH:/usr/local/Mango

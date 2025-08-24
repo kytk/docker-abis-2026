@@ -103,6 +103,7 @@ RUN set -ex && \
       thunar-archive-plugin file-roller xdg-utils \
       tightvncserver novnc websockify net-tools supervisor \
       x11vnc xvfb dbus-x11 sudo \
+      dbus \
       # Python
       python3-pip python3-venv python3-tk python3-gpg \
       # Core Utilities
@@ -171,7 +172,8 @@ RUN set -ex && \
     mkdir -p /home/brain/.vnc && \
     echo "lin4neuro" | vncpasswd -f > /home/brain/.vnc/passwd && \
     chmod 600 /home/brain/.vnc/passwd && \
-    chown -R brain:brain /home/brain /usr/local/freesurfer/8.1.0/subjects
+    chown -R brain:brain /home/brain /usr/local/freesurfer/8.1.0/subjects \
+          /usr/local/spm25_standalone /usr/local/conn22v2407_standalone
 
 # Part 4: System cleanup
 RUN set -ex && \
@@ -228,7 +230,10 @@ RUN set -ex && \
     mkdir -p /home/brain/.config/xfce4/terminal && \
     chown -R brain:brain /home/brain/.config && \
     chown -R brain:brain /home/brain/logs && \
-    echo '\n# Disable screensaver\nif command -v xset >/dev/null 2>&1 && xset q >/dev/null 2>&1; then\n    xset s off\nfi' >> /home/brain/.bashrc
+    mkdir -p /home/brain/.dbus && \
+    chown -R brain:brain /home/brain/.dbus && \
+    mkdir -p /tmp/.config /tmp/.cache /tmp/.local/share && \
+    chmod 755 /tmp/.config /tmp/.cache /tmp/.local
 
 # Copy configuration files
 COPY xfce4-desktop.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
