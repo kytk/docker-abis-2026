@@ -21,9 +21,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       build-essential dkms \
       curl wget git gnupg \
-      unzip zip p7zip-full pigz file \
-      libcharls2 libgdcm3.0 libhdf5-cpp-103-1 libhdf5-hl-100 \
-      libinsighttoolkit5.2 libminc2-5.2.0 libnetcdf19 libsocket++1
+      unzip zip p7zip-full pigz file 
 
 # Copy packaged software into the builder stage
 COPY packages/* /tmp/
@@ -42,8 +40,7 @@ RUN set -ex && \
     unzip mrtrix3_jammy.zip -d /usr/local && \
     # ANTs
     unzip ANTs-jammy.zip -d /usr/local && \
-    # AlizaMS & FreeSurfer (install deps first)
-    apt install -y ./alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb && \
+    # FreeSurfer (install deps first)
     apt install -y ./freesurfer_ubuntu22-8.1.0_amd64.deb && \
     # Prepare FreeSurfer subjects directory for the user
     mkdir -p /home/brain/freesurfer/8.1.0 && \
@@ -89,6 +86,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     TZ=Asia/Tokyo \
     DISPLAY=:1
 
+COPY packages/alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb /tmp/
+
 # Part 1: Install runtime dependencies
 RUN set -ex && \
     apt-get update && \
@@ -115,6 +114,8 @@ RUN set -ex && \
       libreoffice-calc libreoffice-writer octave gawk sed libopenblas-base \
       libjpeg62 libgtk2.0-0 language-pack-en gettext xterm x11-apps \
       libncurses5 && \
+    cd /tmp/ && \
+    apt install -y ./alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb && \
     # Timezone setup
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
