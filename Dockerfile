@@ -1,8 +1,12 @@
+# syntax=docker/dockerfile:1
+
 # Dockerfile for kytk/abis-2026 with Multi-Stage Build
 # Author: K. Nemoto
-# Date: 20 Aug 2025
+# Date: 07 Sep 2025
 # Description: This Dockerfile uses a multi-stage build to create a smaller,
 #              optimized container image for neuroimaging analysis.
+
+# 1.0.14: minimize xfce4
 
 #------------------------------------------------------------------------------
 # Stage 1: The "Builder" Stage
@@ -24,53 +28,56 @@ RUN apt-get update && \
       unzip zip p7zip-full pigz file 
 
 # Copy packaged software into the builder stage
-COPY packages/* /tmp/
+#COPY packages/* /tmp/
 
 # Install all neuroimaging software
-RUN set -ex && \
-    cd /tmp/ && \
+RUN --mount=type=bind,source=packages,target=/tmp/packages \
+    set -ex && \
     # Mango
-    unzip mango_unix.zip -d /usr/local/ && \
+    unzip /tmp/packages/mango_unix.zip -d /usr/local/ && \
     # MRIcroGL
-    unzip MRIcroGL_linux.zip -d /usr/local/ && \
+    unzip /tmp/packages/MRIcroGL_linux.zip -d /usr/local/ && \
     # dcm2niix
     mkdir -p /usr/local/dcm2niix && \
-    unzip dcm2niix_lnx.zip -d /usr/local/dcm2niix && \
+    unzip /tmp/packages/dcm2niix_lnx.zip -d /usr/local/dcm2niix && \
     # MRtrix3
-    unzip mrtrix3_jammy.zip -d /usr/local && \
+    unzip /tmp/packages/mrtrix3_jammy.zip -d /usr/local && \
     # ANTs
-    unzip ANTs-jammy.zip -d /usr/local && \
+    unzip /tmp/packages/ANTs-jammy.zip -d /usr/local && \
     # FreeSurfer (install deps first)
-    apt install -y ./freesurfer_ubuntu22-8.1.0_amd64.deb && \
+    apt install -y /tmp/packages/freesurfer_ubuntu22-8.1.0_amd64.deb && \
+    # MCR
+    unzip /tmp/packages/MCRv97.zip -d /usr/local/freesurfer/8.1.0/ && \
     # Prepare FreeSurfer subjects directory for the user
     mkdir -p /home/brain/freesurfer/8.1.0 && \
+    mkdir -p /home/brain/matlab && \
     ln -s /usr/local/freesurfer/8.1.0/subjects /home/brain/freesurfer/8.1.0/ && \
-    unzip bert.zip -d /usr/local/freesurfer/8.1.0/subjects/ && \
+    unzip /tmp/packages/bert.zip -d /usr/local/freesurfer/8.1.0/subjects/ && \
     # Matlab MCR R2024b
-    mkdir -p mcr_r2024b && \
-    mv MATLAB_Runtime_R2024b_Update_1_glnxa64.zip mcr_r2024b/ && \
-    cd mcr_r2024b && \
+    mkdir -p /tmp/mcr_r2024b && \
+    cp /tmp/packages/MATLAB_Runtime_R2024b_Update_1_glnxa64.zip /tmp/mcr_r2024b/ && \
+    cd /tmp/mcr_r2024b && \
     unzip MATLAB_Runtime_R2024b_Update_1_glnxa64.zip && \
     ./install -mode silent -agreeToLicense yes -destinationFolder /usr/local/MATLAB/MCR/ && \
-    cd /tmp/ && \
-    rm -rf mcr_r2024b && \
+    rm -rf /tmp/mcr_r2024b && \
     # SPM25
-    unzip spm_standalone_25.01.02_Linux.zip && \
-    mv spm_standalone spm25_standalone && \
-    mv spm25_standalone /usr/local && \
+    unzip /tmp/packages/spm_standalone_25.01.02_Linux.zip -d /tmp/ && \
+    mv /tmp/spm_standalone /tmp/spm25_standalone && \
+    mv /tmp/spm25_standalone /usr/local && \
     # CONNv2407
-    unzip conn22v2407_standalone_jammy_R2024b.zip -d /usr/local && \
+    unzip /tmp/packages/conn22v2407_standalone_jammy_R2024b.zip -d /usr/local && \
     chmod 755 /usr/local/conn22v2407_standalone/run_conn.sh && \
     chmod 755 /usr/local/conn22v2407_standalone/conn && \
     # FSL
-    tar -xf fsl-6.0.7.18-jammy.tar.gz -C /usr/local/ && \
+    tar -xf /tmp/packages/fsl-6.0.7.18-jammy.tar.gz -C /usr/local/ && \
     # Git Scripts
     mkdir -p /home/brain/git && \
     cd /home/brain/git && \
     git clone https://gitlab.com/kytk/fs-scripts.git && \
     git clone https://gitlab.com/kytk/kn-scripts.git && \
+    find /usr/local/bin /usr/local/lib /usr/local/mrtrix3 /usr/local/ANTs /usr/local/freesurfer /usr/local/fsl -type f -exec file {} \; | grep "ELF" | cut -d: -f1 | xargs --no-run-if-empty strip
     # Cleanup builder stage
-    rm -rf /tmp/*
+    #rm -rf /tmp/*
 
 #------------------------------------------------------------------------------
 # Stage 2: The "Final" Stage
@@ -86,17 +93,21 @@ ENV DEBIAN_FRONTEND=noninteractive \
     TZ=Asia/Tokyo \
     DISPLAY=:1
 
-COPY packages/alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb /tmp/
+# Exception: Copy AlizaMS installer
+#COPY packages/alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb /tmp/
 
 # Part 1: Install runtime dependencies
-RUN set -ex && \
+RUN --mount=type=bind,source=packages,target=/tmp/packages \
+    set -ex && \
     apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
       # XFCE Desktop & VNC
-      xfce4 xfce4-terminal xfce4-indicator-plugin xfce4-clipman \
-      xfce4-clipman-plugin xfce4-statusnotifier-plugin xfce4-screenshooter \
-      shimmer-themes dmz-cursor-theme elementary-xfce-icon-theme xinit \
-      thunar-archive-plugin file-roller xdg-utils \
+      xfce4-session xfce4-panel xfwm4 xfce4-terminal xfce4-settings \
+      xfdesktop4 xfce4-screenshooter xfce4-appfinder \
+      shimmer-themes \
+      thunar thunar-archive-plugin file-roller xdg-utils \
+      gnome-icon-theme tango-icon-theme elementary-xfce-icon-theme \
+      libgtk2.0-0 xinit \
       tightvncserver novnc websockify net-tools supervisor \
       x11vnc xvfb dbus-x11 sudo \
       dbus \
@@ -114,8 +125,9 @@ RUN set -ex && \
       libreoffice-calc libreoffice-writer octave gawk sed libopenblas-base \
       libjpeg62 libgtk2.0-0 language-pack-en gettext xterm x11-apps \
       libncurses5 && \
-    cd /tmp/ && \
-    apt install -y ./alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb && \
+    cd /tmp/packages && \
+    # AlizaMS installation
+    apt install -y /tmp/packages/alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb && \
     # Timezone setup
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
@@ -137,6 +149,8 @@ RUN set -ex && \
     apt-get update && \
     apt-get install -y --no-install-recommends firefox && \
     xdg-mime default firefox.desktop text/html && \
+    # Clear temp files
+    #rm -rf /tmp/* && \
     # Final apt cleanup for this layer
     apt-get clean && \
     apt-get autoremove -y --purge && \
@@ -146,12 +160,14 @@ RUN set -ex && \
 COPY --from=builder /usr/local/ /usr/local/
 COPY --from=builder /home/brain/git/ /home/brain/git/
 COPY --from=builder /home/brain/freesurfer/ /home/brain/freesurfer/
+COPY --from=builder /home/brain/matlab/ /home/brain/matlab/
 
 # Part 3: User setup and configuration
 COPY deep_ocean.png /usr/share/backgrounds/
 COPY bash_aliases /etc/skel/.bash_aliases
 COPY bash_aliases /root/.bash_aliases
 COPY bash_aliases /home/brain/.bash_aliases
+COPY startup.m /home/brain/matlab/
 RUN rm -f /usr/share/backgrounds/xfce/xfce*.*p*g && \
     chmod 644 /root/.bash_aliases && \
     chmod 644 /etc/skel/.bash_aliases
@@ -184,7 +200,7 @@ RUN set -ex && \
     # Clear logs
     find /var/log/ -type f -exec cp -f /dev/null {} \; && \
     # Clear temp files
-    rm -rf /tmp/* && \
+    #rm -rf /tmp/* && \
     # Remove documentation, man pages, and locales
     find /usr/share/doc -depth -type f ! -name copyright -delete && \
     find /usr/share/doc -empty -delete && \
@@ -229,9 +245,10 @@ RUN set -ex && \
     chown -R brain:brain /home/brain/.config && \
     chown -R brain:brain /home/brain/logs && \
     mkdir -p /home/brain/.dbus && \
-    chown -R brain:brain /home/brain/.dbus && \
-    mkdir -p /tmp/.config /tmp/.cache /tmp/.local/share && \
-    chmod 755 /tmp/.config /tmp/.cache /tmp/.local
+    chown -R brain:brain /home/brain/.dbus
+    #  && \
+    # mkdir -p /tmp/.config /tmp/.cache /tmp/.local/share && \
+    #chmod 755 /tmp/.config /tmp/.cache /tmp/.local
 
 # Copy configuration files
 COPY xfce4-desktop.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
