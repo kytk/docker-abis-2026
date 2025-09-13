@@ -2,11 +2,11 @@
 
 # Dockerfile for kytk/abis-2026 with Multi-Stage Build
 # Author: K. Nemoto
-# Date: 07 Sep 2025
+# Date: 13 Sep 2025
 # Description: This Dockerfile uses a multi-stage build to create a smaller,
 #              optimized container image for neuroimaging analysis.
 
-# 1.0.14: minimize xfce4 and handle external drive via entrypoint.sh
+# 1.0.15: and handle external drive via startup.sh
 
 #------------------------------------------------------------------------------
 # Stage 1: The "Builder" Stage
@@ -255,14 +255,19 @@ COPY xfce4-desktop.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce
 COPY terminalrc /home/brain/.config/xfce4/terminal/terminalrc
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY startup.sh /usr/local/bin/startup.sh
 
 # Set final permissions and ownership
 RUN chown brain:brain /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml && \
     chown brain:brain /home/brain/.config/xfce4/terminal/terminalrc && \
-    chmod +x /usr/local/bin/entrypoint.sh
+    chmod +x /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/startup.sh
 
 # Expose port for noVNC
 EXPOSE 6080
+
+# startup.sh runs as ROOT first, then switches to brain and calls entrypoint.sh
+CMD ["/usr/local/bin/startup.sh"]
 
 # Switch to the non-root user
 USER brain
