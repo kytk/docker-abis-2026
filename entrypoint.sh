@@ -2,10 +2,38 @@
 
 # Apptainer-Compatible Entrypoint Script
 # Based on original simple design with compatibility improvements
-# K. Nemoto 20 Aug 2025
+# K. Nemoto 13 Sep 2025
+# 1.0.14: add shared folder support for Windows/macOS
 
 # Default mode is GUI
 MODE=${MODE:-gui}
+
+# Shared Folder Setup (Windows/macOS compatibility)
+setup_shared_folder() {
+    echo "Setting up shared folder..."
+    
+    # macOS: External drive is mounted directly to /home/brain/share
+    # Windows: External drive is mounted to /root/share, so symlink is needed
+    
+    if [[ ! -e /home/brain/share ]] && [[ -d /root/share ]]; then
+        # Windows environment: Create symbolic link
+        ln -s /root/share /home/brain/share 2>/dev/null
+        if [[ $? -eq 0 ]]; then
+            echo "  Windows environment detected: Created /home/brain/share -> /root/share link"
+        else
+            echo "  Warning: Could not create symlink for shared folder"
+        fi
+    elif [[ -d /home/brain/share ]]; then
+        # macOS environment: Already mounted
+        echo "  macOS environment detected: /home/brain/share is available"
+    else
+        # No shared folder detected (normal operation)
+        echo "  No shared folder detected (normal operation)"
+    fi
+}
+
+# Setup shared folder at startup
+setup_shared_folder
 
 # Function to detect if running in Apptainer/Singularity
 is_apptainer() {

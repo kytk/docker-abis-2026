@@ -6,7 +6,7 @@
 # Description: This Dockerfile uses a multi-stage build to create a smaller,
 #              optimized container image for neuroimaging analysis.
 
-# 1.0.14: minimize xfce4
+# 1.0.14: minimize xfce4 and handle external drive via entrypoint.sh
 
 #------------------------------------------------------------------------------
 # Stage 1: The "Builder" Stage
