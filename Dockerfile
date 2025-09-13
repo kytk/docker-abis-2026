@@ -266,12 +266,8 @@ RUN chown brain:brain /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4
 # Expose port for noVNC
 EXPOSE 6080
 
-# startup.sh runs as ROOT first, then switches to brain and calls entrypoint.sh
-CMD ["/usr/local/bin/startup.sh"]
-
-# Switch to the non-root user
-USER brain
+# startup.sh runs as ROOT first, then switches to brain user
 ENV USER=brain
 
 # Set the default command to run on container start
-CMD ["/usr/local/bin/entrypoint.sh"]
+CMD ["/usr/local/bin/startup.sh"]
