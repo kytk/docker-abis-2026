@@ -23,7 +23,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Install build-time dependencies and essential tools
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      build-essential dkms \
+      build-essential ca-certificates dkms \
       curl wget git gnupg \
       unzip zip p7zip-full pigz file 
 
@@ -115,7 +115,7 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
       python3-pip python3-venv python3-tk python3-gpg \
       # Core Utilities
       wget tzdata iputils-ping less nano rsync locate git apt-utils apt-file \
-      apturl at-spi2-core bc dc default-jre evince gedit \
+      apturl at-spi2-core bc dc ca-certificates default-jre evince gedit \
       gnome-system-monitor gnome-system-tools baobab imagemagick \
       vim rename ntp tree unzip zip p7zip-full pigz csh tcsh gnupg meld \
       # Fonts & Themes
