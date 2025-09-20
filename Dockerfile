@@ -6,7 +6,7 @@
 # Description: This Dockerfile uses a multi-stage build to create a smaller,
 #              optimized container image for neuroimaging analysis.
 
-# 1.0.15: and handle external drive via startup.sh
+# 1.0.17: make it simple 
 
 #------------------------------------------------------------------------------
 # Stage 1: The "Builder" Stage
@@ -33,8 +33,6 @@ RUN apt-get update && \
 # Install all neuroimaging software
 RUN --mount=type=bind,source=packages,target=/tmp/packages \
     set -ex && \
-    # Mango
-    unzip /tmp/packages/mango_unix.zip -d /usr/local/ && \
     # MRIcroGL
     unzip /tmp/packages/MRIcroGL_linux.zip -d /usr/local/ && \
     # dcm2niix
@@ -74,10 +72,7 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
     mkdir -p /home/brain/git && \
     cd /home/brain/git && \
     git clone https://gitlab.com/kytk/fs-scripts.git && \
-    git clone https://gitlab.com/kytk/kn-scripts.git && \
-    find /usr/local/bin /usr/local/lib /usr/local/mrtrix3 /usr/local/ANTs /usr/local/freesurfer /usr/local/fsl -type f -exec file {} \; | grep "ELF" | cut -d: -f1 | xargs --no-run-if-empty strip
-    # Cleanup builder stage
-    #rm -rf /tmp/*
+    git clone https://gitlab.com/kytk/kn-scripts.git
 
 #------------------------------------------------------------------------------
 # Stage 2: The "Final" Stage
@@ -92,9 +87,6 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=Asia/Tokyo \
     DISPLAY=:1
-
-# Exception: Copy AlizaMS installer
-#COPY packages/alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb /tmp/
 
 # Part 1: Install runtime dependencies
 RUN --mount=type=bind,source=packages,target=/tmp/packages \
@@ -122,9 +114,10 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
       software-properties-common fonts-noto fonts-noto-cjk \
       appmenu-gtk-module-common appmenu-gtk2-module libappmenu-gtk2-parser0 \
       # Apps & Libs
-      libreoffice-calc libreoffice-writer octave gawk sed libopenblas-base \
-      libjpeg62 libgtk2.0-0 language-pack-en gettext xterm x11-apps \
+      gawk sed libopenblas-base \
+      libjpeg62 libgtk2.0-0 language-pack-en gettext \
       libncurses5 && \
+    apt-get install -y octave gnumeric && \
     cd /tmp/packages && \
     # AlizaMS installation
     apt install -y /tmp/packages/alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb && \
@@ -136,8 +129,7 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
     python3 -m pip install --upgrade pip && \
     pip install --no-cache-dir \
        numpy pandas matplotlib seaborn jupyter notebook gdcm \
-       pydicom heudiconv nipype nibabel bash_kernel octave_kernel && \
-    python3 -m bash_kernel.install && \
+       pydicom heudiconv nipype nibabel && \
     # Firefox setup
     install -d -m 0755 /etc/apt/keyrings && \
     wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | \
@@ -149,8 +141,6 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
     apt-get update && \
     apt-get install -y --no-install-recommends firefox && \
     xdg-mime default firefox.desktop text/html && \
-    # Clear temp files
-    #rm -rf /tmp/* && \
     # Final apt cleanup for this layer
     apt-get clean && \
     apt-get autoremove -y --purge && \
@@ -199,13 +189,12 @@ RUN set -ex && \
     pip cache purge && \
     # Clear logs
     find /var/log/ -type f -exec cp -f /dev/null {} \; && \
-    # Clear temp files
-    #rm -rf /tmp/* && \
-    # Remove documentation, man pages, and locales
-    find /usr/share/doc -depth -type f ! -name copyright -delete && \
-    find /usr/share/doc -empty -delete && \
-    rm -rf /usr/share/man /usr/share/groff /usr/share/info \
-           /usr/share/lintian /usr/share/linda /var/cache/man && \
+    # Remove documentation and man pages
+    #find /usr/share/doc -depth -type f ! -name copyright -delete && \
+    #find /usr/share/doc -empty -delete && \
+    #rm -rf /usr/share/man /usr/share/groff /usr/share/info \
+    #       /usr/share/lintian /usr/share/linda /var/cache/man && \
+    # Remove locales
     find /usr/share/locale -maxdepth 1 -mindepth 1 ! -name 'en*' -exec rm -r {} \;
 
 # Part 5: MATLAB MCR cleanup
@@ -246,9 +235,6 @@ RUN set -ex && \
     chown -R brain:brain /home/brain/logs && \
     mkdir -p /home/brain/.dbus && \
     chown -R brain:brain /home/brain/.dbus
-    #  && \
-    # mkdir -p /tmp/.config /tmp/.cache /tmp/.local/share && \
-    #chmod 755 /tmp/.config /tmp/.cache /tmp/.local
 
 # Copy configuration files
 COPY xfce4-desktop.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
