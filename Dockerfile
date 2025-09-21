@@ -2,11 +2,11 @@
 
 # Dockerfile for kytk/abis-2026 with Multi-Stage Build
 # Author: K. Nemoto
-# Date: 13 Sep 2025
+# Date: 20 Sep 2025
 # Description: This Dockerfile uses a multi-stage build to create a smaller,
 #              optimized container image for neuroimaging analysis.
 
-# 1.0.17: make it simple 
+# 1.0.17: make it simple and add screenshooter to the panel
 
 #------------------------------------------------------------------------------
 # Stage 1: The "Builder" Stage
@@ -119,6 +119,7 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
       libncurses5 && \
     apt-get install -y octave gnumeric && \
     cd /tmp/packages && \
+    mkdir -p /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml && \
     # AlizaMS installation
     apt install -y /tmp/packages/alizams_1.9.10+git0.95d7909-1+1.1_amd64.deb && \
     # Timezone setup
@@ -229,7 +230,6 @@ RUN set -ex && \
 RUN set -ex && \
     mkdir -p /home/brain/logs && \
     chmod 1777 /tmp && \
-    mkdir -p /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml && \
     mkdir -p /home/brain/.config/xfce4/terminal && \
     chown -R brain:brain /home/brain/.config && \
     chown -R brain:brain /home/brain/logs && \
@@ -238,6 +238,7 @@ RUN set -ex && \
 
 # Copy configuration files
 COPY xfce4-desktop.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
+COPY xfce4-panel.xml /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
 COPY terminalrc /home/brain/.config/xfce4/terminal/terminalrc
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -245,6 +246,7 @@ COPY startup.sh /usr/local/bin/startup.sh
 
 # Set final permissions and ownership
 RUN chown brain:brain /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml && \
+    chown brain:brain /home/brain/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml && \
     chown brain:brain /home/brain/.config/xfce4/terminal/terminalrc && \
     chmod +x /usr/local/bin/entrypoint.sh && \
     chmod +x /usr/local/bin/startup.sh
