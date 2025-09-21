@@ -1,7 +1,7 @@
 #!/bin/bash
-# Shared Folder Setup - Windows/macOS Cross-platform Support
+# Shared Folder Setup - Windows/macOS/Linux Cross-platform Support
 # Author: K. Nemoto
-# Version: 1.0.15
+# Version: 1.0.17
 
 echo "=== Setting up shared folder ==="
 echo "Current user: $(whoami)"
@@ -63,12 +63,12 @@ if [[ -d /root/share ]] && [[ $root_share_files -gt 0 ]] && [[ $brain_share_file
     
 # macOS: /home/brain/share already mounted with external drive
 elif [[ -d /home/brain/share ]] && [[ $brain_share_files -gt 0 ]]; then
-    echo "DETECTED: macOS environment"
+    echo "DETECTED: macOS/Linux environment"
     echo "External drive already mounted to /home/brain/share"
     
     # Ensure correct ownership
     chown -R brain:brain /home/brain/share 2>/dev/null || true
-    echo "SUCCESS: macOS setup complete"
+    echo "SUCCESS: macOS/Linux setup complete"
     echo "Shared folder available at: /home/brain/share"
     
 # Force Windows setup if /root/share has content (fallback)

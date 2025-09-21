@@ -1,7 +1,7 @@
 #!/bin/bash
 # Entrypoint script for ABIS container
 # Handles both interactive and non-interactive modes
-# 1.0.15
+# 1.0.17
 
 set -e
 
