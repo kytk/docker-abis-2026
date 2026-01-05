@@ -2,11 +2,11 @@
 
 # Dockerfile for kytk/abis-2026 with Multi-Stage Build
 # Author: K. Nemoto
-# Date: 20 Sep 2025
+# Date: 18 Dec 2025
 # Description: This Dockerfile uses a multi-stage build to create a smaller,
 #              optimized container image for neuroimaging analysis.
 
-# 1.0.17: make it simple and add screenshooter to the panel
+# 1.0.18: breakdown layer
 
 #------------------------------------------------------------------------------
 # Stage 1: The "Builder" Stage
@@ -41,7 +41,10 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
     # MRtrix3
     unzip /tmp/packages/mrtrix3_jammy.zip -d /usr/local && \
     # ANTs
-    unzip /tmp/packages/ANTs-jammy.zip -d /usr/local && \
+    unzip /tmp/packages/ANTs-jammy.zip -d /usr/local
+
+RUN --mount=type=bind,source=packages,target=/tmp/packages \
+    set -ex && \
     # FreeSurfer (install deps first)
     apt install -y /tmp/packages/freesurfer_ubuntu22-8.1.0_amd64.deb && \
     # MCR
@@ -50,7 +53,10 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
     mkdir -p /home/brain/freesurfer/8.1.0 && \
     mkdir -p /home/brain/matlab && \
     ln -s /usr/local/freesurfer/8.1.0/subjects /home/brain/freesurfer/8.1.0/ && \
-    unzip /tmp/packages/bert.zip -d /usr/local/freesurfer/8.1.0/subjects/ && \
+    unzip /tmp/packages/bert.zip -d /usr/local/freesurfer/8.1.0/subjects/
+
+RUN --mount=type=bind,source=packages,target=/tmp/packages \
+    set -ex && \
     # Matlab MCR R2024b
     mkdir -p /tmp/mcr_r2024b && \
     cp /tmp/packages/MATLAB_Runtime_R2024b_Update_1_glnxa64.zip /tmp/mcr_r2024b/ && \
@@ -65,7 +71,10 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
     # CONNv2407
     unzip /tmp/packages/conn22v2407_standalone_jammy_R2024b.zip -d /usr/local && \
     chmod 755 /usr/local/conn22v2407_standalone/run_conn.sh && \
-    chmod 755 /usr/local/conn22v2407_standalone/conn && \
+    chmod 755 /usr/local/conn22v2407_standalone/conn
+
+RUN --mount=type=bind,source=packages,target=/tmp/packages \
+    set -ex && \
     # FSL
     tar -xf /tmp/packages/fsl-6.0.7.18-jammy.tar.gz -C /usr/local/ && \
     # Git Scripts
@@ -148,9 +157,28 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
     rm -rf /var/lib/apt/lists/*
 
 # Part 2: Copy pre-built applications from the builder stage
-COPY --from=builder /usr/local/ /usr/local/
-COPY --from=builder /home/brain/git/ /home/brain/git/
+# Part 2a: Copy small neuroimaging tools (~2-3GB)
+COPY --from=builder /usr/local/MRIcroGL/ /usr/local/MRIcroGL/
+COPY --from=builder /usr/local/dcm2niix/ /usr/local/dcm2niix/
+COPY --from=builder /usr/local/mrtrix3/ /usr/local/mrtrix3/
+COPY --from=builder /usr/local/ANTs/ /usr/local/ANTs/
+
+# Part 2b: Copy FreeSurfer and MCR v97 (~8-10GB)
+COPY --from=builder /usr/local/freesurfer/ /usr/local/freesurfer/
 COPY --from=builder /home/brain/freesurfer/ /home/brain/freesurfer/
+
+# Part 2c: Copy MATLAB MCR R2024b (~15-20GB)
+COPY --from=builder /usr/local/MATLAB/ /usr/local/MATLAB/
+
+# Part 2d: Copy SPM25 and CONN (~3-5GB)
+COPY --from=builder /usr/local/spm25_standalone/ /usr/local/spm25_standalone/
+COPY --from=builder /usr/local/conn22v2407_standalone/ /usr/local/conn22v2407_standalone/
+
+# Part 2e: Copy FSL (~10-15GB)
+COPY --from=builder /usr/local/fsl/ /usr/local/fsl/
+
+# Part 2f: Copy git repositories and matlab startup
+COPY --from=builder /home/brain/git/ /home/brain/git/
 COPY --from=builder /home/brain/matlab/ /home/brain/matlab/
 
 # Part 3: User setup and configuration
