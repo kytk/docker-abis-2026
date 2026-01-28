@@ -2,11 +2,11 @@
 
 # Dockerfile for kytk/abis-2026 with Multi-Stage Build
 # Author: K. Nemoto
-# Date: 18 Dec 2025
+# Date: 28 Jan 2026
 # Description: This Dockerfile uses a multi-stage build to create a smaller,
 #              optimized container image for neuroimaging analysis.
 
-# 1.0.18: breakdown layer
+# 1.0.19: add file
 
 #------------------------------------------------------------------------------
 # Stage 1: The "Builder" Stage
@@ -117,7 +117,7 @@ RUN --mount=type=bind,source=packages,target=/tmp/packages \
       # Core Utilities
       wget tzdata iputils-ping less nano rsync locate git apt-utils apt-file \
       apturl at-spi2-core bc dc ca-certificates default-jre evince gedit \
-      gnome-system-monitor gnome-system-tools baobab imagemagick \
+      gnome-system-monitor gnome-system-tools baobab imagemagick file \
       vim rename ntp tree unzip zip p7zip-full pigz csh tcsh gnupg meld \
       # Fonts & Themes
       software-properties-common fonts-noto fonts-noto-cjk \
